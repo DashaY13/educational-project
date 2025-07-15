@@ -16,6 +16,10 @@ export class LoginPage {
     this.errorMessage = this.page.locator('[data-test="error"]');
   }
 
+   async goto() {
+    await this.page.goto('https://www.saucedemo.com/');
+  }
+
   // Общий метод для входа
   async login(username: string, password: string): Promise<void> {
     await this.usernameInput.fill(username);

@@ -6,13 +6,21 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "@faker-js/faker": "^9.7.0",
     "playwright": "^1.52.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
+    "@playwright/test": "^1.54.1",
     "@types/node": "^22.15.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DashaY13/educational-project.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DashaY13/educational-project/issues"
+  },
+  "homepage": "https://github.com/DashaY13/educational-project#readme",
+  "description": ""
 }

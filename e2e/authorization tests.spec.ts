@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { credentials } from 'C:\Users\darya.ustimova\.vscode\playwright\e2e\credentials.ts'; // ваш файл
 
 const userPassword = 'secret_sauce';
 
@@ -46,4 +47,8 @@ test('authorization under error user', async ({ page }) => {
 test('authorization under visual user', async ({ page }) => {
     await login(page, 'visual_user', userPassword);
     await expect(page.locator('[data-test="item-4-img-link"]')).toBeVisible();
+});
+test('Авторизация стандартным пользователем', async ({ loginPage, page }) => {
+  await loginPage.loginStandardUser(credentials.password);
+  await expect(page.locator('[data-test="title"]')).toBeVisible();
 });
