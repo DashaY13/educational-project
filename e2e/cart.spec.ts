@@ -1,67 +1,109 @@
 import { test, expect } from '../fixtures/fixtures';
 
-test('Добавление первого товара в корзину', async ({ loginPage }) => {
-    await loginPage.login('standard_user', 'secret_sauce');
-    await loginPage.page.locator('.inventory_item').nth(0).locator('button').click();
-    await expect(loginPage.page.locator('.shopping_cart_badge')).toHaveText('1');
+test.describe('Тесты для корзины', () => {
+  test.beforeEach(async ({ page }) => {
+    // Переход на страницу логина
+    await page.goto('https://www.saucedemo.com');
+
+    // Проверка загрузки страницы логина
+    await page.waitForSelector('[data-test="username"]', { state: 'visible', timeout: 15000 });
+
+    // Логин пользователя
+    await page.fill('[data-test="username"]', 'standard_user');
+    await page.fill('[data-test="password"]', 'secret_sauce');
+    await page.click('[data-test="login-button"]');
+
+    // Проверка URL после логина
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html', { timeout: 10000 });
+
+    // Явное ожидание элемента
+    await page.waitForSelector('.inventory_list', { state: 'visible', timeout: 10000 });
+
+    // Проверка загрузки страницы
+    await expect(page.locator('.inventory_list')).toBeVisible();
   });
 
-test('Добавление второго товара в корзину', async ({ loginPage }) => {
-  await loginPage.login('standard_user', 'secret_sauce');
-  await loginPage.page.locator('.inventory_item').nth(0).locator('button').click();
-  await loginPage.page.locator('.inventory_item').nth(1).locator('button').click();
-  await expect(loginPage.page.locator('.shopping_cart_badge')).toHaveText('2');
-});
+test('Добавление первого товара в корзину', async ({ cartPage, page }) => {
+     // Добавление товара в корзину
+     await cartPage.addItemToCart(0);
 
-test('Удаление товаров из корзины', async ({ loginPage, cartPage }) => {
-  await loginPage.login('standard_user', 'secret_sauce');
-  await loginPage.page.locator('.inventory_item').nth(0).locator('button').click();
-  await loginPage.page.locator('.inventory_item').nth(1).locator('button').click();
-  await loginPage.page.locator('.shopping_cart_link').click();
-  await cartPage.removeItem(0);
-  await expect(cartPage.cartItems).toHaveCount(1);
-  await cartPage.removeItem(0);
-  await expect(cartPage.cartItems).toHaveCount(0);
-});
+     // Проверка количества товаров в корзине
+     await expect(cartPage.page.locator('.shopping_cart_badge')).toHaveText('1');
+   });
 
-test('Проверка содержимого корзины', async ({ loginPage, cartPage }) => {
-  await loginPage.login('standard_user', 'secret_sauce');
-  await loginPage.page.locator('.inventory_item').nth(0).locator('button').click();
-  await loginPage.page.locator('.inventory_item').nth(1).locator('button').click();
-  await loginPage.page.locator('.shopping_cart_link').click();
+   test('Добавление второго товара в корзину', async ({ cartPage, page }) => {
+     // Проверка загрузки страницы
+     await expect(page.locator('.inventory_list')).toBeVisible();
 
-  // Проверяем количество товаров
-  await expect(cartPage.cartItems).toHaveCount(2);
+     // Добавление товаров в корзину
+     await cartPage.addItemToCart(0);
+     await cartPage.addItemToCart(1);
 
-  // Проверяем названия товаров
-  const firstItemName = await cartPage.cartItems.nth(0).locator('.inventory_item_name').innerText();
-  const secondItemName = await cartPage.cartItems.nth(1).locator('.inventory_item_name').innerText();
-  await expect(firstItemName).toBeTruthy();
-  await expect(secondItemName).toBeTruthy();
-});
+     // Проверка количества товаров в корзине
+     await expect(cartPage.page.locator('.shopping_cart_badge')).toHaveText('2');
+   });
 
-test('Проверка содержимого корзины после добавления товаров', async ({ loginPage, cartPage }) => {
-  await loginPage.login('standard_user', 'secret_sauce');
+   test('Удаление товаров из корзины', async ({ cartPage, page }) => {
+     // Проверка загрузки страницы
+     await expect(page.locator('.inventory_list')).toBeVisible();
 
-  // Получаем названия товаров до добавления в корзину
-  const firstItemName = await loginPage.page.locator('.inventory_item').nth(0).locator('.inventory_item_name').innerText();
-  const secondItemName = await loginPage.page.locator('.inventory_item').nth(1).locator('.inventory_item_name').innerText();
+     // Добавление товаров в корзину
+     await cartPage.addItemToCart(0);
+     await cartPage.addItemToCart(1);
 
-  // Добавляем товары в корзину
-  await loginPage.page.locator('.inventory_item').nth(0).locator('button').click();
-  await loginPage.page.locator('.inventory_item').nth(1).locator('button').click();
+     // Переход в корзину
+     await cartPage.goToCart();
 
-  // Переходим в корзину
-  await loginPage.page.locator('.shopping_cart_link').click();
+     // Удаление товаров из корзины
+     await cartPage.removeItem(0);
+     await expect(cartPage.cartItems).toHaveCount(1);
+     await cartPage.removeItem(0);
+     await expect(cartPage.cartItems).toHaveCount(0);
+   });
 
-  // Проверяем количество товаров в корзине
-  await expect(cartPage.cartItems).toHaveCount(2);
+   test('Проверка содержимого корзины', async ({ cartPage, page }) => {
+     // Проверка загрузки страницы
+     await expect(page.locator('.inventory_list')).toBeVisible();
 
-  // Проверяем названия товаров в корзине
-  const firstCartItemName = await cartPage.cartItems.nth(0).locator('.inventory_item_name').innerText();
-  const secondCartItemName = await cartPage.cartItems.nth(1).locator('.inventory_item_name').innerText();
+     // Добавление товаров в корзину
+     await cartPage.addItemToCart(0);
+     await cartPage.addItemToCart(1);
 
-  // Проверяем соответствие названий
-  await expect(firstCartItemName).toBe(firstItemName);
-  await expect(secondCartItemName).toBe(secondItemName);
-});
+     // Переход в корзину
+     await cartPage.goToCart();
+
+     // Проверка количества товаров
+     await expect(cartPage.cartItems).toHaveCount(2);
+
+     // Проверка названий товаров
+     const firstItemName = await cartPage.getItemName(0);
+     const secondItemName = await cartPage.getItemName(1);
+     await expect(firstItemName).toBeTruthy();
+     await expect(secondItemName).toBeTruthy();
+   });
+
+   test('Проверка содержимого корзины после добавления товаров', async ({ cartPage, page }) => {
+     // Проверка загрузки страницы
+     await expect(page.locator('.inventory_list')).toBeVisible();
+
+     // Получаем названия товаров до добавления в корзину
+     const firstItemName = await cartPage.page.locator('.inventory_item').nth(0).locator('.inventory_item_name').innerText();
+     const secondItemName = await cartPage.page.locator('.inventory_item').nth(1).locator('.inventory_item_name').innerText();
+
+     // Добавляем товары в корзину
+     await cartPage.addItemToCart(0);
+     await cartPage.addItemToCart(1);
+
+     // Переходим в корзину
+     await cartPage.goToCart();
+
+     // Проверяем количество товаров в корзине
+     await expect(cartPage.cartItems).toHaveCount(2);
+
+     // Проверяем названия товаров в корзине
+     const firstCartItemName = await cartPage.getItemName(0);
+     const secondCartItemName = await cartPage.getItemName(1);
+     await expect(firstCartItemName).toBe(firstItemName);
+     await expect(secondCartItemName).toBe(secondItemName);
+   });
+   });
